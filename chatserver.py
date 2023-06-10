@@ -1,4 +1,4 @@
-from flask import Flask, request,make_response,session, send_from_directory
+from flask import Flask, request,make_response,session, send_from_directory, jsonify
 from flask_session import Session
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
@@ -79,7 +79,7 @@ def my_api():
 
     qa_id = session.get('qa_id', None)
     if qa_id is None:
-        qa = ConversationalRetrievalChain.from_llm(llm, instance.as_retriever(), memory=memory, get_chat_history=lambda h : h, verbose=True, condense_question_prompt=CONDENSE_QUESTION_PROMPT, combine_docs_chain_kwargs={"prompt": QA_PROMPT})
+        qa = ConversationalRetrievalChain.from_llm(llm, instance.as_retriever(), memory=memory, get_chat_history=lambda h : h, verbose=True, condense_question_prompt=CONDENSE_QUESTION_PROMPT, combine_docs_chain_kwargs={"prompt": QA_PROMPT}, return_source_documents=True)
         qa_id = str(uuid.uuid4())
         session['qa_id']=qa_id
         session_objects[qa_id] = qa
@@ -89,9 +89,15 @@ def my_api():
     query = request.args.get('query')
     # Process the input string through the Q&A chain
     query_response = qa({"question": query})
+    metadata_list = [obj.metadata for obj in query_response["source_documents"]]
 
-    response = make_response(query_response["answer"], 200)
-    response.mimetype = "text/plain"
+    response = {
+        'answer' : query_response["answer"],
+        'sources' : metadata_list
+    }
+
+    response = make_response(jsonify(response), 200)
+    response.mimetype = "application/json"
     return response
 
 if __name__ == '__main__':

@@ -50,6 +50,40 @@
       margin-bottom: 5px;
       margin-right: 300px;
     }
+   
+    .sources-panel {
+      margin-right: 300px;
+      background-color: #e6f7ff;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .sources-list {
+      font-family: "Arial", "Helvetica", sans-serif;
+      font-size: 75%;
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sources-list li {
+      margin-bottom: 5px;
+    }
+
+    .sources-list li a {
+      color: #0645ad;
+      text-decoration: none;
+    }
+
+    .sources-list li a:hover {
+      text-decoration: underline;
+    }
+
+    .sources-heading {
+      font-family: "Arial", "Helvetica", sans-serif;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 <body>
@@ -67,32 +101,94 @@
       event.preventDefault();
       var userInput = document.getElementById('user-input').value;
       document.getElementById('user-input').value = '';
-
+  
       displayMessage('user', userInput);
-
+  
       // Call your web API here with userInput
       // Example API call using fetch:
       fetch(`/api?query=${encodeURIComponent(userInput)}`)
-      .then(response => response.text())
-      .then(text => {
-        var response = marked.parse(text); // Assuming the API response has a 'response' field
-
-        displayMessage('bot', response);
-      });
+        .then(response => response.json())
+        .then(data => {
+          const botAnswer = marked.parse(data.answer);
+          const sources = data.sources;
+  
+          displayMessage('bot', botAnswer);
+  
+          // Check if sources are available and display them
+          if (Array.isArray(sources)) {
+            const sourceList = sources.map(source => source.source);
+            displaySources(sourceList);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
     });
-
+  
     function displayMessage(sender, message) {
-    var chatLog = document.getElementById('chat-log');
+      var chatLog = document.getElementById('chat-log');
+  
+      var messageElement = document.createElement('div');
+      messageElement.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+      messageElement.innerHTML = message; // Use innerHTML instead of textContent
+  
+      chatLog.appendChild(messageElement);
+  
+      // Scroll to the bottom of the chat log
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+  
+    function displaySources(sources) {
+      const chatLog = document.getElementById('chat-log');
+  
+      const sourcesPanel = document.createElement('div');
+      sourcesPanel.classList.add('sources-panel');
 
-    var messageElement = document.createElement('div');
-    messageElement.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
-    messageElement.innerHTML = message; // Use innerHTML instead of textContent
+      const sourcesHeading = document.createElement('h4');
+      sourcesHeading.classList.add('sources-heading');
+      sourcesHeading.textContent = 'Sources';
 
-    chatLog.appendChild(messageElement);
+      const sourcesList = document.createElement('ul');
+      sourcesList.classList.add('sources-list');
+  
+      sources.forEach(source => {
+        const sourceItem = document.createElement('li');
 
-    // Scroll to the bottom of the chat log
-    chatLog.scrollTop = chatLog.scrollHeight;
+        // Check if the source is a valid URL
+        const isLink = isValidURL(source);
+
+        if (isLink) {
+          const sourceLink = document.createElement('a');
+          sourceLink.href = source;
+          sourceLink.textContent = source;
+          sourceLink.target = "_blank"; // Open link in a new tab
+
+          sourceItem.appendChild(sourceLink);
+        } else {
+          sourceItem.textContent = source;
+        }        
+
+        sourcesList.appendChild(sourceItem);
+      });
+
+      sourcesPanel.appendChild(sourcesHeading);
+      sourcesPanel.appendChild(sourcesList);
+  
+      chatLog.appendChild(sourcesPanel);
+  
+      // Scroll to the bottom of the chat log
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function isValidURL(url) {
+      try {
+        new URL(url);
+        return true;
+      } catch (error) {
+        return false;
+      }
     }
   </script>
+  
 </body>
 </html>

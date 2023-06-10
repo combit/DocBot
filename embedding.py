@@ -2,7 +2,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.sitemap import SitemapLoader
-from langchain.document_loaders import UnstructuredPDFLoader
+from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import CSVLoader
 from langchain.document_loaders import ReadTheDocsLoader
 from langchain.document_loaders import UnstructuredHTMLLoader
@@ -12,7 +12,7 @@ import os
 # This adds documents from a langchain loader to the database. The customized splitters serve to be able to break at sentence level if required.
 def add_documents(loader, instance):
     documents = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=60, separators= ["\n\n", "\n", ".", ";", ",", " ", ""])
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=200, separators= ["\n\n", "\n", ".", ";", ",", " ", ""])
     texts = text_splitter.split_documents(documents)
     instance.add_documents(texts)
 
@@ -46,11 +46,11 @@ add_documents(loader, instance)
 pdf_files = ["C:\\temp\\OpenAIPlayground - V2\\input\\Designer-Manual.pdf",
             "C:\\temp\\OpenAIPlayground - V2\\input\\Ad-hoc Designer-Manual.pdf",
             "C:\\temp\\OpenAIPlayground - V2\\input\\Programmers-Manual.pdf",
-            "C:\\temp\\OpenAIPlayground - V2\\input\\ServicePack.pdf",
+            #"C:\\temp\\OpenAIPlayground - V2\\input\\ServicePack.pdf",
             "C:\\temp\\OpenAIPlayground - V2\\input\\ReportServer.pdf"]
 
 for file_name in pdf_files:
-    loader = UnstructuredPDFLoader(file_name)
+    loader = PyPDFLoader(file_name)
     add_documents(loader, instance)
 
 # add .NET help
@@ -69,15 +69,15 @@ for filename in files:
         add_documents(loader, instance)
 
 # add EN sitemap
-loader = SitemapLoader(web_path='https://www.combit.com/page-sitemap.xml')
-loader.session.headers["User-Agent"] ="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
-add_documents(loader, instance)
+# loader = SitemapLoader(web_path='https://www.combit.com/page-sitemap.xml')
+# loader.session.headers["User-Agent"] ="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+# add_documents(loader, instance)
 
 # add KB dump
-loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb@forum-combit-net-2023-04-25.dcqresult.sanitized.csv", csv_args={
+loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb@forum-combit-net-2023-04-25.dcqresult.sanitized.csv", source_column='title', csv_args={
     'delimiter': ',',
     'quotechar': '"',
-    'fieldnames': ['title','raw']
+    'fieldnames': ['title','raw'],
 })
 
 add_documents(loader, instance)
