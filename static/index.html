@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat UI</title>
+  <style>
+    .chat-container {
+      width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .chat-log {
+      height: 600px;
+      overflow-y: scroll;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+    }
+
+    .chat-form {
+      display: flex;
+    }
+
+    .user-input {
+      flex: 1;
+      padding: 5px;
+    }
+
+    .send-button {
+      padding: 5px 10px;
+    }
+
+    .user-message {
+      font-family: "Arial", "Helvetica", sans-serif;
+      background-color: #f1f1f1;
+      padding: 5px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      margin-left: 300px;
+    }
+
+    .bot-message {
+      font-family: "Arial", "Helvetica", sans-serif;
+      background-color: #e6f7ff;
+      padding: 5px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      margin-right: 300px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div id="chat-log" class="chat-log"></div>
+    <form id="chat-form" class="chat-form">
+      <input type="text" id="user-input" class="user-input" placeholder="Type your message...">
+      <button type="submit" class="send-button">Send</button>
+    </form>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>    
+  <script>
+    document.getElementById('chat-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      var userInput = document.getElementById('user-input').value;
+      document.getElementById('user-input').value = '';
+
+      displayMessage('user', userInput);
+
+      // Call your web API here with userInput
+      // Example API call using fetch:
+      fetch(`/api?query=${encodeURIComponent(userInput)}`)
+      .then(response => response.text())
+      .then(text => {
+        var response = marked.parse(text); // Assuming the API response has a 'response' field
+
+        displayMessage('bot', response);
+      });
+    });
+
+    function displayMessage(sender, message) {
+    var chatLog = document.getElementById('chat-log');
+
+    var messageElement = document.createElement('div');
+    messageElement.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+    messageElement.innerHTML = message; // Use innerHTML instead of textContent
+
+    chatLog.appendChild(messageElement);
+
+    // Scroll to the bottom of the chat log
+    chatLog.scrollTop = chatLog.scrollHeight;
+    }
+  </script>
+</body>
+</html>
