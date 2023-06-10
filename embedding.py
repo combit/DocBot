@@ -1,20 +1,20 @@
+import os
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.sitemap import SitemapLoader
 from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import CSVLoader
-from langchain.document_loaders import ReadTheDocsLoader
 from langchain.document_loaders import UnstructuredHTMLLoader
 from bs4 import BeautifulSoup
-import os
+
 
 # This adds documents from a langchain loader to the database. The customized splitters serve to be able to break at sentence level if required.
-def add_documents(loader, instance):
-    documents = loader.load()
+def add_documents(document_loader, chroma_instance):
+    documents = document_loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=200, separators= ["\n\n", "\n", ".", ";", ",", " ", ""])
     texts = text_splitter.split_documents(documents)
-    instance.add_documents(texts)
+    chroma_instance.add_documents(texts)
 
 def sanitize_blog_post(content: BeautifulSoup) -> str:
     # Find all unneeded elements in the BeautifulSoup object. 
@@ -34,11 +34,15 @@ def sanitize_blog_post(content: BeautifulSoup) -> str:
 embeddings = OpenAIEmbeddings()
 
 # Create Chroma instance
-instance = Chroma(embedding_function=embeddings, persist_directory="C:\\temp\\OpenAIPlayground - V2\\combitEN")
+instance = Chroma(embedding_function=embeddings, 
+                  persist_directory="C:\\temp\\OpenAIPlayground - V2\\combitEN")
 
 # add EN Blog sitemap. Set user agent to circumvent bot filter.
-loader = SitemapLoader(web_path='https://www.combit.blog/post-sitemap.xml', filter_urls=["https://www.combit.blog/en/"], parsing_function=sanitize_blog_post)
-loader.session.headers["User-Agent"] ="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+loader = SitemapLoader(web_path='https://www.combit.blog/post-sitemap.xml', 
+                       filter_urls=["https://www.combit.blog/en/"], 
+                       parsing_function=sanitize_blog_post)
+
+loader.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
 add_documents(loader, instance)
 
 
@@ -74,7 +78,9 @@ for filename in files:
 # add_documents(loader, instance)
 
 # add KB dump
-loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb@forum-combit-net-2023-04-25.dcqresult.sanitized.csv", source_column='title', csv_args={
+loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb@forum-combit-net-2023-04-25.dcqresult.sanitized.csv", 
+                   source_column='title', 
+                   csv_args={
     'delimiter': ',',
     'quotechar': '"',
     'fieldnames': ['title','raw'],

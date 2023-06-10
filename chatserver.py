@@ -1,3 +1,6 @@
+import uuid
+import os
+import shutil
 from flask import Flask, request,make_response,session, send_from_directory, jsonify
 from flask_session import Session
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -6,9 +9,6 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-import uuid
-import os
-import shutil
 
 app = Flask(__name__)
 
@@ -30,7 +30,8 @@ os.makedirs(session_dir)
 embeddings = OpenAIEmbeddings()
 
 # Open Chroma vector database that is created via embedding.py
-instance = Chroma(persist_directory="C:\\temp\\OpenAIPlayground - V2\\combitEN", embedding_function=embeddings)
+instance = Chroma(persist_directory="C:\\temp\\OpenAIPlayground - V2\\combitEN", 
+                  embedding_function=embeddings)
 
 # Initialize ChatOpenAI model
 llm = ChatOpenAI(temperature=0.5, model_name="gpt-3.5-turbo")
@@ -70,7 +71,7 @@ def my_api():
     memory_id = session.get('memory_id', None)
     if memory_id is None:
         # We use a ConversationBufferMemory here, could be changed to one of the other available langchain memory types
-        memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, output_key='answer')        
+        memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, output_key='answer')
         memory_id = str(uuid.uuid4())
         session['memory_id'] = memory_id
         session_objects[memory_id] = memory
