@@ -1,9 +1,10 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, quote
 from bs4 import BeautifulSoup
 
-def crawl_page(url, visited, sitemap, parsed_url, driver):
+
+def crawl_page(url, start_url, visited, sitemap, parsed_url, driver):
     # Add the current URL to the visited set
     visited.add(url)
 
@@ -26,17 +27,26 @@ def crawl_page(url, visited, sitemap, parsed_url, driver):
             href = urljoin(current_url, href)
             parsed_href = urlparse(href)
 
-            # Ensure the link is from the same domain and not visited yet
-            if parsed_href.netloc == parsed_url.netloc and href not in visited:
+            # Some special cases from our docs
+            encoded_href = href.replace(" ", "%20").replace("%2520", "%20")
+
+            # Ensure the link starts with the same domain and path as the start URL
+            if (
+                href.startswith(start_url)
+                and parsed_href.netloc == parsed_url.netloc
+                and encoded_href not in visited
+                and not ("~" in href and "/net/" in href)
+            ):
                 # Add the link to the sitemap
                 # Exclude URLs with fragments (anchor links)
                 if not "#" in href:
-                    sitemap.append(href)                
+                    sitemap.append(encoded_href)
                     # Print the current URL being added
-                    print("Added:", href)
+                    print("Added:", encoded_href)
 
                 # Recursively crawl the linked page
-                crawl_page(href, visited, sitemap, parsed_url, driver)
+                crawl_page(encoded_href, start_url, visited, sitemap, parsed_url, driver)
+
 
 # Main function
 def generate_sitemap(start_url):
@@ -54,7 +64,7 @@ def generate_sitemap(start_url):
 
     try:
         # Crawl the start page
-        crawl_page(start_url, visited, sitemap, parsed_url, driver)
+        crawl_page(start_url, start_url, visited, sitemap, parsed_url, driver)
 
         # Generate the sitemap.xml file
         with open('sitemap.xml', 'w') as f:
@@ -70,7 +80,8 @@ def generate_sitemap(start_url):
         driver.quit()
 
 
-#generate_sitemap('https://docu.combit.net/designer/en/')
-#generate_sitemap('https://docu.combit.net/reportserver/en/')
-#generate_sitemap('https://docu.combit.net/progref/en/')
-generate_sitemap('https://docu.combit.net/adhocdesigner/en/')
+generate_sitemap('https://docu.combit.net/net/en/')
+# generate_sitemap('https://docu.combit.net/designer/en/')
+# generate_sitemap('https://docu.combit.net/reportserver/en/')
+# generate_sitemap('https://docu.combit.net/progref/en/')
+# generate_sitemap('https://docu.combit.net/adhocdesigner/en/')

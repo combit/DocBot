@@ -1,14 +1,23 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Chat UI</title>
   <style>
+    body {
+      background-color: #202020;
+      color: #ffffff;
+      font-family: "Arial", "Helvetica", sans-serif;
+    }
+
     .chat-container {
       width: 1000px;
       margin: 0 auto;
       padding: 20px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 10px;
+      background-color: #262626;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     }
 
     .chat-log {
@@ -16,50 +25,60 @@
       overflow-y: scroll;
       margin-bottom: 10px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 10px;
       padding: 10px;
+      background-color: #1f1f1f;
     }
 
     .chat-form {
       display: flex;
+      margin-top: 10px;
     }
 
     .user-input {
       flex: 1;
       padding: 5px;
+      border-radius: 5px;
+      background-color: #262626;
+      color: #ffffff;
+      border: 1px solid #ccc;
     }
 
     .send-button {
       padding: 5px 10px;
+      border-radius: 5px;
+      background-color: #4d4d4d;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    .user-message,
+    .bot-message {
+      padding: 5px;
+      border-radius: 10px;
+      margin-bottom: 5px;
     }
 
     .user-message {
-      font-family: "Arial", "Helvetica", sans-serif;
-      background-color: #f1f1f1;
-      padding: 5px;
-      border-radius: 5px;
-      margin-bottom: 5px;
+      background-color: #333333;
       margin-left: 300px;
     }
 
     .bot-message {
-      font-family: "Arial", "Helvetica", sans-serif;
-      background-color: #e6f7ff;
-      padding: 5px;
-      border-radius: 5px;
-      margin-bottom: 5px;
+      background-color: #444444;
       margin-right: 300px;
     }
-   
+
     .sources-panel {
       margin-right: 300px;
-      background-color: #e6f7ff;
+      background-color: #444444;
       padding: 10px;
-      border-radius: 5px;
+      border-radius: 10px;
+      margin-top: 10px;
     }
 
     .sources-list {
-      font-family: "Arial", "Helvetica", sans-serif;
       font-size: 75%;
       list-style-type: none;
       padding: 0;
@@ -71,7 +90,7 @@
     }
 
     .sources-list li a {
-      color: #0645ad;
+      color: #42a5f5;
       text-decoration: none;
     }
 
@@ -80,12 +99,12 @@
     }
 
     .sources-heading {
-      font-family: "Arial", "Helvetica", sans-serif;
       font-weight: bold;
       margin-bottom: 5px;
     }
-  </style>
+    </style>
 </head>
+
 <body>
   <div class="chat-container">
     <div id="chat-log" class="chat-log"></div>
@@ -94,16 +113,16 @@
       <button type="submit" class="send-button">Send</button>
     </form>
   </div>
-  
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>    
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    document.getElementById('chat-form').addEventListener('submit', function(event) {
+    document.getElementById('chat-form').addEventListener('submit', function (event) {
       event.preventDefault();
       var userInput = document.getElementById('user-input').value;
       document.getElementById('user-input').value = '';
-  
+
       displayMessage('user', userInput);
-  
+
       // Call your web API here with userInput
       // Example API call using fetch:
       fetch(`/api?query=${encodeURIComponent(userInput)}`)
@@ -111,9 +130,9 @@
         .then(data => {
           const botAnswer = marked.parse(data.answer);
           const sources = data.sources;
-  
+
           displayMessage('bot', botAnswer);
-  
+
           // Check if sources are available and display them
           if (Array.isArray(sources)) {
             const sourceList = sources.map(source => source.source);
@@ -124,23 +143,23 @@
           console.error('Error:', error);
         });
     });
-  
+
     function displayMessage(sender, message) {
       var chatLog = document.getElementById('chat-log');
-  
+
       var messageElement = document.createElement('div');
       messageElement.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
       messageElement.innerHTML = message; // Use innerHTML instead of textContent
-  
+
       chatLog.appendChild(messageElement);
-  
+
       // Scroll to the bottom of the chat log
       chatLog.scrollTop = chatLog.scrollHeight;
     }
-  
+
     function displaySources(sources) {
       const chatLog = document.getElementById('chat-log');
-  
+
       const sourcesPanel = document.createElement('div');
       sourcesPanel.classList.add('sources-panel');
 
@@ -150,32 +169,31 @@
 
       const sourcesList = document.createElement('ul');
       sourcesList.classList.add('sources-list');
-  
+
       sources.forEach(source => {
         const sourceItem = document.createElement('li');
 
-        // Check if the source is a valid URL
         const isLink = isValidURL(source);
 
         if (isLink) {
           const sourceLink = document.createElement('a');
           sourceLink.href = source;
-          sourceLink.textContent = source;
           sourceLink.target = "_blank"; // Open link in a new tab
 
+          const manualType = getManualType(source);          
+          sourceLink.textContent = `${manualType} - ${source}`;
           sourceItem.appendChild(sourceLink);
         } else {
           sourceItem.textContent = source;
-        }        
+        }
 
         sourcesList.appendChild(sourceItem);
       });
 
       sourcesPanel.appendChild(sourcesHeading);
       sourcesPanel.appendChild(sourcesList);
-  
       chatLog.appendChild(sourcesPanel);
-  
+
       // Scroll to the bottom of the chat log
       chatLog.scrollTop = chatLog.scrollHeight;
     }
@@ -188,7 +206,35 @@
         return false;
       }
     }
+
+    function getManualType(url) {
+      if (url.includes("/progref/")) {
+        return "Programmer's Manual";
+      } else if (url.includes("/designer/")) {
+        return "Designer Manual";
+      } else if (url.includes("/reportserver/")) {
+        return "Report Server Manual";
+      } else if (url.includes("/adhocdesigner")) {
+        return "AdHoc Designer Manual";
+      } else if (url.includes("/net/")) {
+        return ".NET Help";
+      } else if (url.includes("combit.blog")) {
+        return "Reporting Blog";
+      } else {
+        return "Manual";
+      }
+    }
+
+    function isValidURL(url) {
+      try {
+        new URL(url);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
   </script>
-  
+
 </body>
+
 </html>

@@ -42,6 +42,20 @@ def sanitize_doctohelp_page(content: BeautifulSoup) -> str:
 
     return str(content.get_text())
 
+def sanitize_documentx_page(content: BeautifulSoup) -> str:
+    # Find all unneeded elements in the BeautifulSoup object. 
+    disposable_elements = content.find_all('div', {"id": "#i-before-header-content"})
+    disposable_elements = disposable_elements+content.find_all('div', {"id": "#i-header-container"})
+    disposable_elements = disposable_elements+content.find_all('div', {"class": "#i-content-width-container"})
+    disposable_elements = disposable_elements+content.find_all('div', {"id": "#i-actions-outer-container"})
+    disposable_elements = disposable_elements+content.find_all('div', {"id": "#i-toc-outer-container"})
+    disposable_elements = disposable_elements+content.find_all('div', {"id": "#i-footer-content"})
+
+    # Remove them from the BeautifulSoup object
+    for element in disposable_elements:
+        element.decompose()
+
+    return str(content.get_text())
 
 
 # Create embeddings instance
@@ -61,6 +75,12 @@ def add_sitemap_documents(web_path, filter_urls, parsing_function, instance):
         
     loader.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
     add_documents(loader, instance)
+
+# add EN .NET help from docu.combit.net
+add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_net_en.xml', 
+                      [], 
+                      sanitize_documentx_page, 
+                      instance)
 
 # add EN designer help from docu.combit.net
 add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_designer_en.xml', 
@@ -92,36 +112,20 @@ add_sitemap_documents('https://www.combit.blog/post-sitemap.xml',
                       sanitize_blog_post, 
                       instance)
 
-# add .NET help
-
-# set the directory path
-DIR_PATH = 'C:\\temp\\OpenAIPlayground - V2\\input\\docu_net_en'
-
-# get a list of all files in the directory
-files = os.listdir(DIR_PATH)
-
-# loop over the files that do not contain a tilde character
-for filename in files:
-    if '~' not in filename and filename.endswith('.html') and 'websearch' not in filename and 'webindex' not in filename:
-        full_path = os.path.join(DIR_PATH, filename)
-        loader = UnstructuredHTMLLoader(file_path=full_path)
-        add_documents(loader, instance)
-
 # add EN sitemap
 # loader = SitemapLoader(web_path='https://www.combit.com/page-sitemap.xml')
 # loader.session.headers["User-Agent"] ="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
 # add_documents(loader, instance)
 
 # add KB dump
-loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb@forum-combit-net-2023-04-25.dcqresult.sanitized.csv", 
-                   source_column='title', 
-                   csv_args={
-    'delimiter': ',',
-    'quotechar': '"',
-    'fieldnames': ['title','raw'],
-})
-
-add_documents(loader, instance)
+#loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb@forum-combit-net-2023-04-25.dcqresult.sanitized.csv", 
+#                   source_column='title', 
+#                   csv_args={
+#    'delimiter': ',',
+#    'quotechar': '"',
+#    'fieldnames': ['title','raw'],
+#})
+#add_documents(loader, instance)
 
 instance.persist()
 instance = None
