@@ -30,6 +30,20 @@ def sanitize_blog_post(content: BeautifulSoup) -> str:
 
     return str(content.get_text())
 
+def sanitize_doctohelp_page(content: BeautifulSoup) -> str:
+    # Find all unneeded elements in the BeautifulSoup object. 
+    navbar_elements = content.find_all('div', {"id": "#c1sideInner"})
+    nav_elements = content.find_all('nav')
+    top_elements = content.find_all('div', {"id": "c1header"})
+
+    # Remove them from the BeautifulSoup object
+    for element in nav_elements + navbar_elements+top_elements:
+        element.decompose()
+
+    return str(content.get_text())
+
+
+
 # Create embeddings instance
 embeddings = OpenAIEmbeddings()
 
@@ -37,38 +51,59 @@ embeddings = OpenAIEmbeddings()
 instance = Chroma(embedding_function=embeddings, 
                   persist_directory="C:\\temp\\OpenAIPlayground - V2\\combitEN")
 
-# add EN Blog sitemap. Set user agent to circumvent bot filter.
-loader = SitemapLoader(web_path='https://www.combit.blog/post-sitemap.xml', 
-                       filter_urls=["https://www.combit.blog/en/"], 
-                       parsing_function=sanitize_blog_post)
-
-loader.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
-add_documents(loader, instance)
-
-
-# add documentation PDFs
-pdf_files = ["C:\\temp\\OpenAIPlayground - V2\\input\\Designer-Manual.pdf",
-            "C:\\temp\\OpenAIPlayground - V2\\input\\Ad-hoc Designer-Manual.pdf",
-            "C:\\temp\\OpenAIPlayground - V2\\input\\Programmers-Manual.pdf",
-            #"C:\\temp\\OpenAIPlayground - V2\\input\\ServicePack.pdf",
-            "C:\\temp\\OpenAIPlayground - V2\\input\\ReportServer.pdf"]
-
-for file_name in pdf_files:
-    loader = PyPDFLoader(file_name)
+def add_sitemap_documents(web_path, filter_urls, parsing_function, instance):
+    if os.path.isfile(web_path):
+        # If it's a local file path, use the SitemapLoader with is_local=True
+        loader = SitemapLoader(web_path=web_path, filter_urls=filter_urls, parsing_function=parsing_function, is_local=True)
+    else:
+        # If it's a web URL, use the SitemapLoader with web_path
+        loader = SitemapLoader(web_path=web_path, filter_urls=filter_urls, parsing_function=parsing_function)
+        
+    loader.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
     add_documents(loader, instance)
+
+# add EN designer help from docu.combit.net
+add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_designer_en.xml', 
+                      [], 
+                      sanitize_doctohelp_page, 
+                      instance)
+
+# add EN programmer's reference from docu.combit.net
+add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_progref_en.xml', 
+                      [], 
+                      sanitize_doctohelp_page, 
+                      instance)
+
+# add EN Report Server reference from docu.combit.net
+add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_reportserver_en.xml', 
+                      [], 
+                      sanitize_doctohelp_page, 
+                      instance)
+
+# add EN AdHoc Designer reference from docu.combit.net
+add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_adhoc_en.xml', 
+                      [], 
+                      sanitize_doctohelp_page, 
+                      instance)
+
+# add EN Blog
+add_sitemap_documents('https://www.combit.blog/post-sitemap.xml', 
+                      ["https://www.combit.blog/en/"], 
+                      sanitize_blog_post, 
+                      instance)
 
 # add .NET help
 
 # set the directory path
-dir_path = 'C:\\temp\\OpenAIPlayground - V2\\input\\docu_net_en'
+DIR_PATH = 'C:\\temp\\OpenAIPlayground - V2\\input\\docu_net_en'
 
 # get a list of all files in the directory
-files = os.listdir(dir_path)
+files = os.listdir(DIR_PATH)
 
 # loop over the files that do not contain a tilde character
 for filename in files:
     if '~' not in filename and filename.endswith('.html') and 'websearch' not in filename and 'webindex' not in filename:
-        full_path = os.path.join(dir_path, filename)
+        full_path = os.path.join(DIR_PATH, filename)
         loader = UnstructuredHTMLLoader(file_path=full_path)
         add_documents(loader, instance)
 

@@ -1,0 +1,76 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from urllib.parse import urlparse, urljoin
+from bs4 import BeautifulSoup
+
+def crawl_page(url, visited, sitemap, parsed_url, driver):
+    # Add the current URL to the visited set
+    visited.add(url)
+
+    # Load the web page using Selenium
+    driver.get(url)
+
+    # Get the current URL after any redirects
+    current_url = driver.current_url
+
+    # Parse the HTML using BeautifulSoup
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+
+    # Find all the links on the page
+    links = soup.find_all('a')
+    for link in links:
+        href = link.get('href')
+        if href is not None:
+            # Resolve relative URLs
+            href = urljoin(current_url, href)
+            parsed_href = urlparse(href)
+
+            # Ensure the link is from the same domain and not visited yet
+            if parsed_href.netloc == parsed_url.netloc and href not in visited:
+                # Add the link to the sitemap
+                # Exclude URLs with fragments (anchor links)
+                if not "#" in href:
+                    sitemap.append(href)                
+                    # Print the current URL being added
+                    print("Added:", href)
+
+                # Recursively crawl the linked page
+                crawl_page(href, visited, sitemap, parsed_url, driver)
+
+# Main function
+def generate_sitemap(start_url):
+    # Initialize the visited set and the sitemap list
+    visited = set()
+    sitemap = []
+
+    # Parse the start URL
+    parsed_url = urlparse(start_url)
+
+    # Configure Selenium to use Chrome in headless mode
+    options = Options()
+    options.headless = True
+    driver = webdriver.Chrome(options=options)
+
+    try:
+        # Crawl the start page
+        crawl_page(start_url, visited, sitemap, parsed_url, driver)
+
+        # Generate the sitemap.xml file
+        with open('sitemap.xml', 'w') as f:
+            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+            f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+            for url in sitemap:
+                f.write(f'  <url>\n')
+                f.write(f'    <loc>{url}</loc>\n')
+                f.write(f'  </url>\n')
+            f.write('</urlset>\n')
+    finally:
+        # Quit the Selenium driver
+        driver.quit()
+
+
+#generate_sitemap('https://docu.combit.net/designer/en/')
+#generate_sitemap('https://docu.combit.net/reportserver/en/')
+#generate_sitemap('https://docu.combit.net/progref/en/')
+generate_sitemap('https://docu.combit.net/adhocdesigner/en/')
