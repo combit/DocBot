@@ -1,253 +1,27 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html>
 
 <head>
   <title>Chat UI</title>
-  <style>
-    body {
-      background-color: #202020;
-      color: #ffffff;
-      font-family: "Arial", "Helvetica", sans-serif;
-    }
-
-    .chat-container {
-      width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      background-color: #262626;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .chat-log {
-      height: 600px;
-      overflow-y: scroll;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 10px;
-      background-color: #1f1f1f;
-    }
-
-    .chat-form {
-      display: flex;
-      margin-top: 10px;
-    }
-
-    .user-input {
-      flex: 1;
-      padding: 5px;
-      border-radius: 5px;
-      background-color: #262626;
-      color: #ffffff;
-      border: 1px solid #ccc;
-    }
-
-    .send-button {
-      padding: 5px 10px;
-      border-radius: 5px;
-      background-color: #4d4d4d;
-      border: none;
-      color: #ffffff;
-      cursor: pointer;
-    }
-
-    .user-message,
-    .bot-message {
-      padding: 5px;
-      border-radius: 10px;
-      margin-bottom: 5px;
-    }
-
-    .user-message {
-      background-color: #333333;
-      margin-left: 300px;
-    }
-
-    .bot-message {
-      background-color: #444444;
-      margin-right: 300px;
-    }
-
-    .sources-panel {
-      margin-right: 300px;
-      background-color: #444444;
-      padding: 10px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-
-    .sources-list {
-      font-size: 75%;
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .sources-list li {
-      margin-bottom: 5px;
-    }
-
-    .sources-list li a {
-      color: #42a5f5;
-      text-decoration: none;
-    }
-
-    .sources-list li a:hover {
-      text-decoration: underline;
-    }
-
-    .sources-heading {
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    </style>
+  <link rel="stylesheet" href="static/styles.css">
 </head>
-
 <body>
   <div class="chat-container">
     <div id="chat-log" class="chat-log"></div>
     <form id="chat-form" class="chat-form">
-      <input type="text" id="user-input" class="user-input" placeholder="Type your message...">
-      <button type="submit" class="send-button">Send</button>
+      <div class="chat-form">
+        <div class="textarea-wrapper">
+          <textarea id="user-input" class="user-input" placeholder="Type your message..." oninput="resizeInput(this)"></textarea>
+        </div>
+        <div class="button-wrapper">
+          <button type="submit" class="send-button">Send</button>
+          <button type="button" id="reset-button">Reset</button>
+        </div>
+      </div>    
     </form>
   </div>
-
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script>
-    document.getElementById('chat-form').addEventListener('submit', function (event) {
-      event.preventDefault();
-      var userInput = document.getElementById('user-input').value;
-      document.getElementById('user-input').value = '';
-
-      displayMessage('user', userInput);
-
-      // Call your web API here with userInput
-      // Example API call using fetch:
-      fetch(`/qa?query=${encodeURIComponent(userInput)}`)
-        .then(response => response.json())
-        .then(data => {
-          const botAnswer = marked.parse(data.answer);
-          const sources = data.sources;
-
-          displayMessage('bot', botAnswer);
-
-          // Check if sources are available and display them
-          if (Array.isArray(sources)) {
-            const sourceList = sources.map(source => source.source);
-            displaySources(sourceList);
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-        });
-    });
-
-    function displayMessage(sender, message) {
-      var chatLog = document.getElementById('chat-log');
-
-      var messageElement = document.createElement('div');
-      messageElement.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
-      messageElement.innerHTML = message; // Use innerHTML instead of textContent
-
-      chatLog.appendChild(messageElement);
-
-      // Scroll to the bottom of the chat log
-      chatLog.scrollTop = chatLog.scrollHeight;
-    }
-
-    function displaySources(sources) {
-      const chatLog = document.getElementById('chat-log');
-
-      const sourcesPanel = document.createElement('div');
-      sourcesPanel.classList.add('sources-panel');
-
-      const sourcesHeading = document.createElement('h4');
-      sourcesHeading.classList.add('sources-heading');
-      sourcesHeading.textContent = 'Sources';
-
-      const sourcesList = document.createElement('ul');
-      sourcesList.classList.add('sources-list');
-
-      sources.forEach(source => {
-        const sourceItem = document.createElement('li');
-
-        const isLink = isValidURL(source);
-
-        if (isLink) {
-          const sourceLink = document.createElement('a');
-          sourceLink.href = source;
-          sourceLink.target = "_blank"; // Open link in a new tab
-
-          const manualType = getManualType(source);
-          const url = '/get_meta_title?url=' + encodeURIComponent(source);
-
-          fetch(url)
-            .then(response => response.json())
-            .then(data => {
-              const metaTitle = data.meta_title;
-              sourceLink.textContent = `${manualType} - ${metaTitle}`;    
-            })
-            .catch(error => {
-              console.error('Error:', error);
-            });
-                    
-          sourceItem.appendChild(sourceLink);
-        } else {
-          sourceItem.textContent = source;
-        }
-
-        sourcesList.appendChild(sourceItem);
-      });
-
-      sourcesPanel.appendChild(sourcesHeading);
-      sourcesPanel.appendChild(sourcesList);
-      chatLog.appendChild(sourcesPanel);
-
-      // Scroll to the bottom of the chat log
-      chatLog.scrollTop = chatLog.scrollHeight;
-    }
-
-    function isValidURL(url) {
-      try {
-        new URL(url);
-        return true;
-      } catch (error) {
-        return false;
-      }
-    }
-
-    function getManualType(url) {
-      if (url.includes("/progref/")) {
-        return "Programmer's Manual";
-      } else if (url.includes("/designer/")) {
-        return "Designer Manual";
-      } else if (url.includes("/reportserver/")) {
-        return "Report Server Manual";
-      } else if (url.includes("/adhocdesigner")) {
-        return "AdHoc Designer Manual";
-      } else if (url.includes("/net/")) {
-        return ".NET Help";
-      } else if (url.includes("combit.blog")) {
-        return "Reporting Blog";
-      } else if (url.includes("forum.combit.net")) {
-        return "Knowledgebase";
-      } else {
-        return "Manual";
-      }
-    }
-
-    function isValidURL(url) {
-      try {
-        new URL(url);
-        return true;
-      } catch (error) {
-        return false;
-      }
-    }
-  </script>
-
+  <script src="static/script.js"></script>
 </body>
-
 </html>

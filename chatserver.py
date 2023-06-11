@@ -12,7 +12,7 @@ from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 # Initialize session management. Secret is used for cookie encryption. Change for production.
 app.secret_key = "T6Otg6T3BlbkFJFow"
@@ -60,10 +60,19 @@ Answer:"""
 
 QA_PROMPT = PromptTemplate(template=qa_template, input_variables=["question", "context"])
 
+
+@app.before_request
+def check_session():
+    if not session.get('active'):
+        reset();
+        pass
+
 @app.route('/')
 def index():
+    session['active'] = 1
     return send_from_directory('static', 'index.html')
 
+# Helper API to return the meta title of a page, used for the sources list
 @app.route('/get_meta_title', methods=['GET'])
 def get_meta_title():
     url = request.args.get('url')
@@ -79,6 +88,25 @@ def get_meta_title():
         return jsonify({'meta_title': title})
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)})
+
+
+# Clears the current session's memory (aka start new chat)
+@app.route('/reset')
+def reset():
+    memory_id = session.get('memory_id', None)
+    if not memory_id is None:
+        del session['memory_id']
+        del session_objects[memory_id]
+
+    qa_id = session.get('qa_id', None)
+    if not qa_id is None:
+        del session['qa_id']
+        del session_objects[qa_id]
+
+    response = make_response()
+    response.status_code = 200
+    return response
+
 @app.route('/qa')
 def my_api():
     # Try to retrieve values from session store. As all session objects need to be JSON serializable,
