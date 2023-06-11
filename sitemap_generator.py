@@ -1,8 +1,20 @@
+import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from urllib.parse import urlparse, urljoin, quote
 from bs4 import BeautifulSoup
 
+
+def scroll_to_bottom(driver):
+    # Scroll to the bottom of the page
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    while True:
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(2)  # Wait for the dynamically loaded content to appear
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
 
 def crawl_page(url, start_url, visited, sitemap, parsed_url, driver):
     # Add the current URL to the visited set
@@ -13,6 +25,10 @@ def crawl_page(url, start_url, visited, sitemap, parsed_url, driver):
 
     # Get the current URL after any redirects
     current_url = driver.current_url
+
+    # Make sure to load dynamically generated content for the start page (KB!)
+    if (url == start_url):
+        scroll_to_bottom(driver)
 
     # Parse the HTML using BeautifulSoup
     html = driver.page_source
@@ -31,8 +47,8 @@ def crawl_page(url, start_url, visited, sitemap, parsed_url, driver):
             encoded_href = href.replace(" ", "%20").replace("%2520", "%20")
 
             # Ensure the link starts with the same domain and path as the start URL
-            if (
-                href.startswith(start_url)
+            compare_url = start_url
+            if (href.startswith(compare_url.split("?", 1)[0])
                 and parsed_href.netloc == parsed_url.netloc
                 and encoded_href not in visited
                 and not ("~" in href and "/net/" in href)
@@ -80,7 +96,8 @@ def generate_sitemap(start_url):
         driver.quit()
 
 
-generate_sitemap('https://docu.combit.net/net/en/')
+generate_sitemap("https://forum.combit.net/docs?category=9")
+# generate_sitemap('https://docu.combit.net/net/en/')
 # generate_sitemap('https://docu.combit.net/designer/en/')
 # generate_sitemap('https://docu.combit.net/reportserver/en/')
 # generate_sitemap('https://docu.combit.net/progref/en/')

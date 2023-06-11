@@ -3,9 +3,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.sitemap import SitemapLoader
-from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import CSVLoader
-from langchain.document_loaders import UnstructuredHTMLLoader
 from bs4 import BeautifulSoup
 
 
@@ -30,33 +28,10 @@ def sanitize_blog_post(content: BeautifulSoup) -> str:
 
     return str(content.get_text())
 
-def sanitize_doctohelp_page(content: BeautifulSoup) -> str:
-    # Find all unneeded elements in the BeautifulSoup object. 
-    navbar_elements = content.find_all('div', {"id": "#c1sideInner"})
-    nav_elements = content.find_all('nav')
-    top_elements = content.find_all('div', {"id": "c1header"})
-
-    # Remove them from the BeautifulSoup object
-    for element in nav_elements + navbar_elements+top_elements:
-        element.decompose()
-
-    return str(content.get_text())
-
 def sanitize_documentx_page(content: BeautifulSoup) -> str:
-    # Find all unneeded elements in the BeautifulSoup object. 
-    disposable_elements = content.find_all('div', {"id": "#i-before-header-content"})
-    disposable_elements = disposable_elements+content.find_all('div', {"id": "#i-header-container"})
-    disposable_elements = disposable_elements+content.find_all('div', {"class": "#i-content-width-container"})
-    disposable_elements = disposable_elements+content.find_all('div', {"id": "#i-actions-outer-container"})
-    disposable_elements = disposable_elements+content.find_all('div', {"id": "#i-toc-outer-container"})
-    disposable_elements = disposable_elements+content.find_all('div', {"id": "#i-footer-content"})
-
-    # Remove them from the BeautifulSoup object
-    for element in disposable_elements:
-        element.decompose()
-
-    return str(content.get_text())
-
+    # Find content div element
+    div_element = content.find('div', {"class": "i-body-content"})
+    return str(div_element)
 
 # Create embeddings instance
 embeddings = OpenAIEmbeddings()
@@ -77,33 +52,33 @@ def add_sitemap_documents(web_path, filter_urls, parsing_function, instance):
     add_documents(loader, instance)
 
 # add EN .NET help from docu.combit.net
-add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_net_en.xml', 
+add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_net_en.xml', 
                       [], 
                       sanitize_documentx_page, 
                       instance)
 
 # add EN designer help from docu.combit.net
-add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_designer_en.xml', 
+add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_designer_en.xml', 
                       [], 
-                      sanitize_doctohelp_page, 
+                      None, 
                       instance)
 
 # add EN programmer's reference from docu.combit.net
-add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_progref_en.xml', 
+add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_progref_en.xml', 
                       [], 
-                      sanitize_doctohelp_page, 
+                      None, 
                       instance)
 
 # add EN Report Server reference from docu.combit.net
-add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_reportserver_en.xml', 
+add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_reportserver_en.xml', 
                       [], 
-                      sanitize_doctohelp_page, 
+                      None, 
                       instance)
 
 # add EN AdHoc Designer reference from docu.combit.net
-add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\sitemap_adhoc_en.xml', 
+add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_adhoc_en.xml', 
                       [], 
-                      sanitize_doctohelp_page, 
+                      None, 
                       instance)
 
 # add EN Blog
@@ -118,14 +93,14 @@ add_sitemap_documents('https://www.combit.blog/post-sitemap.xml',
 # add_documents(loader, instance)
 
 # add KB dump
-#loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb@forum-combit-net-2023-04-25.dcqresult.sanitized.csv", 
-#                   source_column='title', 
-#                   csv_args={
-#    'delimiter': ',',
-#    'quotechar': '"',
-#    'fieldnames': ['title','raw'],
-#})
-#add_documents(loader, instance)
+loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb.sanitized.csv", 
+                   source_column='link', 
+                   csv_args={
+    'delimiter': ',',
+    'quotechar': '"',
+    'fieldnames': ['link','title','raw'],
+})
+add_documents(loader, instance)
 
 instance.persist()
 instance = None
