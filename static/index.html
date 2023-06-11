@@ -125,7 +125,7 @@
 
       // Call your web API here with userInput
       // Example API call using fetch:
-      fetch(`/api?query=${encodeURIComponent(userInput)}`)
+      fetch(`/qa?query=${encodeURIComponent(userInput)}`)
         .then(response => response.json())
         .then(data => {
           const botAnswer = marked.parse(data.answer);
@@ -180,8 +180,19 @@
           sourceLink.href = source;
           sourceLink.target = "_blank"; // Open link in a new tab
 
-          const manualType = getManualType(source);          
-          sourceLink.textContent = `${manualType} - ${source}`;
+          const manualType = getManualType(source);
+          const url = '/get_meta_title?url=' + encodeURIComponent(source);
+
+          fetch(url)
+            .then(response => response.json())
+            .then(data => {
+              const metaTitle = data.meta_title;
+              sourceLink.textContent = `${manualType} - ${metaTitle}`;    
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+                    
           sourceItem.appendChild(sourceLink);
         } else {
           sourceItem.textContent = source;

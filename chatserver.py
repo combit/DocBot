@@ -1,8 +1,10 @@
 import uuid
 import os
 import shutil
+import requests
 from flask import Flask, request,make_response,session, send_from_directory, jsonify
 from flask_session import Session
+from bs4 import BeautifulSoup
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chat_models import ChatOpenAI
@@ -62,9 +64,22 @@ QA_PROMPT = PromptTemplate(template=qa_template, input_variables=["question", "c
 def index():
     return send_from_directory('static', 'index.html')
 
+@app.route('/get_meta_title', methods=['GET'])
+def get_meta_title():
+    url = request.args.get('url')
+    if not url:
+        return jsonify({'error': 'URL parameter is missing'})
 
-
-@app.route('/api')
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        title = soup.find('title').get_text() if soup.title else ''
+        return jsonify({'meta_title': title})
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': str(e)})
+@app.route('/qa')
 def my_api():
     # Try to retrieve values from session store. As all session objects need to be JSON serializable,
     # keep track of non serializable objects in a local store and serialize UUIDs instead.
