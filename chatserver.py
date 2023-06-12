@@ -9,7 +9,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
-from langchain.memory import ConversationBufferMemory
+from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationalRetrievalChain
 
 app = Flask(__name__, static_folder='static')
@@ -114,7 +114,7 @@ def my_api():
     memory_id = session.get('memory_id', None)
     if memory_id is None:
         # We use a ConversationBufferMemory here, could be changed to one of the other available langchain memory types
-        memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, output_key='answer')
+        memory = ConversationBufferWindowMemory(k=5, memory_key="chat_history", return_messages=True, output_key='answer')
         memory_id = str(uuid.uuid4())
         session['memory_id'] = memory_id
         session_objects[memory_id] = memory

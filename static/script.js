@@ -1,4 +1,3 @@
-// script.js
 document.getElementById('chat-form').addEventListener('submit', function (event) {
     event.preventDefault();
     var userInput = document.getElementById('user-input').value;
@@ -53,7 +52,9 @@ document.getElementById('chat-form').addEventListener('submit', function (event)
     const sourcesList = document.createElement('ul');
     sourcesList.classList.add('sources-list');
   
-    sources.forEach(source => {
+    const uniqueSources = Array.from(new Set(sources)); // Get unique sources
+  
+    uniqueSources.forEach(source => {
       const sourceItem = document.createElement('li');
   
       const isLink = isValidURL(source);
@@ -77,7 +78,7 @@ document.getElementById('chat-form').addEventListener('submit', function (event)
           .catch(error => {
             console.error('Error:', error);
           });
-                  
+  
         sourceItem.appendChild(sourceLink);
       } else {
         sourceItem.textContent = source;
@@ -89,10 +90,11 @@ document.getElementById('chat-form').addEventListener('submit', function (event)
     sourcesPanel.appendChild(sourcesHeading);
     sourcesPanel.appendChild(sourcesList);
     chatLog.appendChild(sourcesPanel);
-
+  
     // Scroll to the bottom of the chat log
     chatLog.scrollTop = chatLog.scrollHeight;
   }
+  
   
   function isValidURL(url) {
     try {
@@ -123,16 +125,7 @@ document.getElementById('chat-form').addEventListener('submit', function (event)
     }
   }
   
-  function isValidURL(url) {
-    try {
-      new URL(url);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-  
-  // Add event listener to the reset button
+    // Add event listener to the reset button
   document.getElementById('reset-button').addEventListener('click', function () {
     resetChat();
     callResetAPI();
@@ -163,3 +156,9 @@ document.getElementById('chat-form').addEventListener('submit', function (event)
       input.style.height = input.scrollHeight + (input.scrollHeight - input.offsetHeight) + "px";
     }
   }
+
+  window.addEventListener('DOMContentLoaded', function() {
+    // Display the welcome message
+    var welcomeMessage = "Welcome, this is your friendly combit DocBot :). How can I help you today?";
+    displayMessage('bot', welcomeMessage);
+  });

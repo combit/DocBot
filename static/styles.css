@@ -1,125 +1,138 @@
 body {
-    background-color: #f2f2f2;
-    font-family: "Arial", "Helvetica", sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .chat-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    background-color: #ffffff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
+  background-color: #f2f2f2;
+  font-family: "Arial", "Helvetica", sans-serif;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+}
+
+.chat-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-log {
+  height: 200px; /* Adjusted height for responsiveness */
+  overflow-y: scroll;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  background-color: #f2f2f2;
+}
+
+.chat-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  position: relative;
+}
+
+.textarea-wrapper {
+  flex: 80%;
+}
+
+.button-wrapper {
+  flex: 20%;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.user-input {
+  padding: 5px;
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  color: #333333;
+  border: 1px solid #ccc;
+  resize: none;
+  overflow: auto;
+  font-family: "Arial", "Helvetica", sans-serif;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.send-button {
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: #94ce79;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.user-message,
+.bot-message,
+.sources-panel {
+  padding: 5px;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+.user-message {
+  background-color: #94ce79;
+}
+
+.bot-message {
+  background-color: #d0d0d0;
+}
+
+.sources-panel {
+  background-color: #d0d0d0;
+}
+
+.sources-list {
+  font-size: 80%;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sources-list li {
+  margin-bottom: 5px;
+}
+
+.sources-list li a {
+  color: #4d4dff;
+  text-decoration: none;
+}
+
+.sources-list li a:hover {
+  text-decoration: underline;
+}
+
+.sources-heading {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+#reset-button {
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: #d43d4a;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+#reset-button:hover {
+  background-color: #6666ff;
+}
+
+/* Media queries for responsiveness */
+
+@media screen and (max-width: 600px) {
   .chat-log {
-    height: 400px;
-    overflow-y: scroll;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    background-color: #f2f2f2;
+    height: 150px;
   }
-  
-  .chat-form {
-    display: flex;
-    flex-direction: column;
-    margin-top: 10px;
-    position: relative;
-  }
-  
-  .textarea-wrapper {
-    flex: 80%
-  }
-  
-  .button-wrapper {
-    flex: 20%;
-    align-items: flex-end;
-    gap: 10px;
-  }
-  
-  .user-input {
-    padding: 5px;
-    border-radius: 5px;
-    background-color: #f2f2f2;
-    color: #333333;
-    border: 1px solid #ccc;
-    resize: none;
-    overflow: auto;
-    font-family: "Arial", "Helvetica", sans-serif;
-    font-size: 14px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .send-button {
-    padding: 5px 10px;
-    border-radius: 5px;
-    background-color: #94ce79;
-    border: none;
-    color: #ffffff;
-    cursor: pointer;
-  }
-  
-  .user-message,
-  .bot-message,
-  .sources-panel {
-    padding: 5px;
-    border-radius: 10px;
-    margin-bottom: 5px;
-    width: 100%;
-  }
-  
-  .user-message {
-    background-color: #94ce79;
-  }
-  
-  .bot-message {
-    background-color: #d0d0d0;
-  }
-  
-  .sources-panel {
-    background-color: #d0d0d0;
-  }
-  
-  .sources-list {
-    font-size: 80%;
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .sources-list li {
-    margin-bottom: 5px;
-  }
-  
-  .sources-list li a {
-    color: #4d4dff;
-    text-decoration: none;
-  }
-  
-  .sources-list li a:hover {
-    text-decoration: underline;
-  }
-  
-  .sources-heading {
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  #reset-button {
-    padding: 5px 10px;
-    border-radius: 5px;
-    background-color: #d43d4a;
-    border: none;
-    color: #ffffff;
-    cursor: pointer;
-  }
-  
-  #reset-button:hover {
-    background-color: #6666ff;
-  }
-  
+}
+@media screen and (min-width: 768px) {
+  .chat-log {
+    height: 600px;
+  } 
+}
