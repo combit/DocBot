@@ -1,4 +1,5 @@
 import os
+import re
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -23,15 +24,32 @@ def sanitize_blog_post(content: BeautifulSoup) -> str:
     related = content.find_all('div', {"class": "rp4wp-related-posts"})
 
     # Remove them from the BeautifulSoup object
-    for element in nav_elements + widget_elements+top_elements+author+related :
+    for element in nav_elements+widget_elements+top_elements+author+related :
         element.decompose()
 
     return str(content.get_text())
 
 def sanitize_documentx_page(content: BeautifulSoup) -> str:
-    # Find content div element
+    # remove some areas
+    syntax_element = content.find('div', {"id": "i-syntax-section-content"})
+    requirements_element = content.find('div', {"id": "i-requirements-section-content"})
+    see_also_element = content.find('div', {"id": "i-seealso-section-content"})
+
+    # Remove them from the BeautifulSoup object
+    elements = [element for element in [syntax_element, requirements_element, see_also_element] if element is not None]
+
+    for element in elements:
+        element.decompose()
+
+    # Now find content div element
     div_element = content.find('div', {"class": "i-body-content"})
-    return str(div_element)
+    return re.sub("\n+","\n", str(div_element.get_text()))
+
+def sanitize_content_page(content: BeautifulSoup) -> str:
+    # Find content div element
+    div_element = content.find('div', {"id": "main-content"})
+    return re.sub("\n+","\n", str(div_element.get_text()))
+
 
 # Create embeddings instance
 embeddings = OpenAIEmbeddings()
@@ -55,6 +73,12 @@ def add_sitemap_documents(web_path, filter_urls, parsing_function, instance):
 add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_net_en.xml', 
                       [], 
                       sanitize_documentx_page, 
+                      instance)
+
+# add EN sitemap
+add_sitemap_documents('https://www.combit.com/page-sitemap.xml', 
+                      [], 
+                      sanitize_content_page, 
                       instance)
 
 # add EN designer help from docu.combit.net
@@ -86,11 +110,6 @@ add_sitemap_documents('https://www.combit.blog/post-sitemap.xml',
                       ["https://www.combit.blog/en/"], 
                       sanitize_blog_post, 
                       instance)
-
-# add EN sitemap
-# loader = SitemapLoader(web_path='https://www.combit.com/page-sitemap.xml')
-# loader.session.headers["User-Agent"] ="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
-# add_documents(loader, instance)
 
 # add KB dump
 loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb.sanitized.csv", 
