@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long,too-many-locals,invalid-name
 
 def scroll_to_bottom(driver):
     """Scroll to the bottom of the page"""
@@ -99,7 +99,7 @@ def generate_sitemap(start_url):
             print("Added:", current_url)
 
         # Generate the sitemap.xml file
-        with open('sitemap.xml', 'w') as f:
+        with open('sitemap.xml', 'w', encoding="utf-8") as f:
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
             f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
             for url in sitemap:

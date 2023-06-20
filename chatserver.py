@@ -13,7 +13,7 @@ from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationalRetrievalChain
 
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long,invalid-name
 
 app = Flask(__name__, static_folder='static')
 
@@ -35,7 +35,7 @@ os.makedirs(session_dir)
 embeddings = OpenAIEmbeddings()
 
 # Open Chroma vector database that is created via embedding.py
-instance = Chroma(persist_directory="C:\\temp\\OpenAIPlayground - V2\\combitEN", 
+instance = Chroma(persist_directory="C:\\temp\\OpenAIPlayground - V2\\combitEN",
                   embedding_function=embeddings)
 
 # Initialize ChatOpenAI model
@@ -52,7 +52,7 @@ Standalone question:"""
 CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(CONDENSE_TEMPLATE)
 
 # QA prompt
-QA_TEMPLATE = """You are an enthusiastic and helpful combit support bot providing technical information about List & Label to software developers. 
+QA_TEMPLATE = """You are an enthusiastic and helpful combit support bot providing technical information about List & Label to software developers.
 Given the sections from the documentation in the context, answer the question at the end and markdown format the reply. Include a helpful code snippet if it is available in the context.
 If you are unsure and the answer is not explicitly given in the context simply answer "Sorry, I don't know."
 
@@ -115,6 +115,7 @@ def reset():
 
 @app.route('/qa')
 def my_api():
+    """Main endpoint for Q&A chat"""
     # Try to retrieve values from session store. As all session objects need to be JSON serializable,
     # keep track of non serializable objects in a local store and serialize UUIDs instead.
     memory_id = session.get('memory_id', None)
