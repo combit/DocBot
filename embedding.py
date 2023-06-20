@@ -71,7 +71,7 @@ def add_sitemap_documents(web_path, filter_urls, parsing_function, chroma_instan
     else:
         # If it's a web URL, use the SitemapLoader with web_path
         sitemap_loader = SitemapLoader(web_path=web_path, filter_urls=filter_urls, parsing_function=parsing_function)
-    
+
     sitemap_loader.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
     add_documents(sitemap_loader, chroma_instance)
 
