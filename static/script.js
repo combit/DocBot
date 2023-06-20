@@ -120,6 +120,8 @@ document.getElementById('chat-form').addEventListener('submit', function (event)
       return "Reporting Blog";
     } else if (url.includes("forum.combit.net")) {
       return "Knowledgebase";
+    } else if (url.includes("combit.com")) {
+      return "combit Website";
     } else {
       return "Manual";
     }
