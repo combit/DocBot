@@ -1,3 +1,4 @@
+"""Simple chat server implementation"""
 import uuid
 import os
 import shutil
@@ -11,6 +12,8 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationalRetrievalChain
+
+# pylint: disable=line-too-long
 
 app = Flask(__name__, static_folder='static')
 
@@ -63,9 +66,9 @@ QA_PROMPT = PromptTemplate(template=QA_TEMPLATE, input_variables=["question", "c
 
 @app.before_request
 def check_session():
+    """Checks if the current session is active."""
     if not session.get('active'):
-        reset();
-        pass
+        reset()
 
 @app.route('/')
 def index():
@@ -83,7 +86,7 @@ def get_meta_title():
 
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'}
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=40)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         title = soup.find('title').get_text() if soup.title else ''
@@ -117,9 +120,9 @@ def my_api():
     memory_id = session.get('memory_id', None)
     if memory_id is None:
         # We use a ConversationBufferMemory here, could be changed to one of the other available langchain memory types
-        memory = ConversationBufferWindowMemory(k=5, 
-                                                memory_key="chat_history", 
-                                                return_messages=True, 
+        memory = ConversationBufferWindowMemory(k=5,
+                                                memory_key="chat_history",
+                                                return_messages=True,
                                                 output_key='answer')
         memory_id = str(uuid.uuid4())
         session['memory_id'] = memory_id
@@ -129,13 +132,13 @@ def my_api():
 
     qa_id = session.get('qa_id', None)
     if qa_id is None:
-        qa = ConversationalRetrievalChain.from_llm(llm, 
-                                                instance.as_retriever(), 
-                                                memory=memory, 
-                                                get_chat_history=lambda h : h, 
-                                                verbose=True, 
-                                                condense_question_prompt=CONDENSE_QUESTION_PROMPT, 
-                                                combine_docs_chain_kwargs={"prompt": QA_PROMPT}, 
+        qa = ConversationalRetrievalChain.from_llm(llm,
+                                                instance.as_retriever(),
+                                                memory=memory,
+                                                get_chat_history=lambda h : h,
+                                                verbose=True,
+                                                condense_question_prompt=CONDENSE_QUESTION_PROMPT,
+                                                combine_docs_chain_kwargs={"prompt": QA_PROMPT},
                                                 return_source_documents=True)
         qa_id = str(uuid.uuid4())
         session['qa_id']=qa_id

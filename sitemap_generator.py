@@ -1,12 +1,14 @@
+"""Allows to generate sitemaps for URLs that don't have one."""
 import time
+from urllib.parse import urlparse, urljoin
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from urllib.parse import urlparse, urljoin, quote
 from bs4 import BeautifulSoup
 
+# pylint: disable=line-too-long
 
 def scroll_to_bottom(driver):
-    # Scroll to the bottom of the page
+    """Scroll to the bottom of the page"""
     last_height = driver.execute_script("return document.body.scrollHeight")
     while True:
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -18,6 +20,7 @@ def scroll_to_bottom(driver):
 
 
 def generate_sitemap(start_url):
+    """Generate a sitemap for the given start_url by following all links within the domain."""
     # Initialize the visited set and the sitemap list
     visited = set()
     sitemap = []
@@ -37,7 +40,7 @@ def generate_sitemap(start_url):
         while url_stack:
             url = url_stack.pop()
 
-            if (url in visited):
+            if url in visited:
                 continue
 
             # Add the current URL to the visited set
@@ -100,9 +103,9 @@ def generate_sitemap(start_url):
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
             f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
             for url in sitemap:
-                f.write(f'  <url>\n')
+                f.write('  <url>\n')
                 f.write(f'    <loc>{url}</loc>\n')
-                f.write(f'  </url>\n')
+                f.write('  </url>\n')
             f.write('</urlset>\n')
 
     finally:

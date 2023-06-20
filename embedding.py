@@ -1,3 +1,4 @@
+"""Helper functions for document embedding."""
 import os
 import re
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -7,6 +8,7 @@ from langchain.document_loaders.sitemap import SitemapLoader
 from langchain.document_loaders import CSVLoader
 from bs4 import BeautifulSoup
 
+# pylint: disable=line-too-long
 
 def add_documents(document_loader, chroma_instance):
     """Adds documents from a langchain loader to the database"""
@@ -58,20 +60,20 @@ def sanitize_content_page(content: BeautifulSoup) -> str:
 embeddings = OpenAIEmbeddings()
 
 # Create Chroma instance
-instance = Chroma(embedding_function=embeddings, 
+instance = Chroma(embedding_function=embeddings,
                   persist_directory="C:\\temp\\OpenAIPlayground - V2\\combitEN")
 
-def add_sitemap_documents(web_path, filter_urls, parsing_function, instance):
+def add_sitemap_documents(web_path, filter_urls, parsing_function, chroma_instance):
     """Adds all pages given in the web_path. Allows to filter and parse/sanitize the pages."""
     if os.path.isfile(web_path):
         # If it's a local file path, use the SitemapLoader with is_local=True
-        loader = SitemapLoader(web_path=web_path, filter_urls=filter_urls, parsing_function=parsing_function, is_local=True)
+        sitemap_loader = SitemapLoader(web_path=web_path, filter_urls=filter_urls, parsing_function=parsing_function, is_local=True)
     else:
         # If it's a web URL, use the SitemapLoader with web_path
-        loader = SitemapLoader(web_path=web_path, filter_urls=filter_urls, parsing_function=parsing_function)
+        sitemap_loader = SitemapLoader(web_path=web_path, filter_urls=filter_urls, parsing_function=parsing_function)
         
-    loader.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
-    add_documents(loader, instance)
+    sitemap_loader.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+    add_documents(sitemap_loader, chroma_instance)
 
 # add EN .NET help from docu.combit.net
 add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_net_en.xml',
@@ -116,14 +118,14 @@ add_sitemap_documents('https://www.combit.blog/post-sitemap.xml',
                       instance)
 
 # add KB dump
-loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb.sanitized.csv",
+csv_loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb.sanitized.csv",
                    source_column='link',
                    csv_args={
                     'delimiter': ',',
                     'quotechar': '"',
                     'fieldnames': ['link','title','raw'],
                     })
-add_documents(loader, instance)
+add_documents(csv_loader, instance)
 
 instance.persist()
 instance = None
