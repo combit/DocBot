@@ -1,0 +1,9 @@
+uuid
+requests
+Flask
+flask-session
+beautifulsoup4
+langchain
+selenium
+urllib3
+beautifulsoup4

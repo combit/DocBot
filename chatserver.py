@@ -41,16 +41,16 @@ llm = ChatOpenAI(temperature=0.5, model_name="gpt-3.5-turbo")
 # Prompt Templates & Messages
 
 # Condense Prompt
-condense_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
+CONDENSE_TEMPLATE = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
 Chat History:
 {chat_history}
 Follow Up Input: {question}
 Standalone question:"""
-CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
+CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(CONDENSE_TEMPLATE)
 
 # QA prompt
-qa_template = """You are an enthusiastic and helpful combit support bot providing technical information about List & Label to software developers. 
-Given the sections from the documentation in the context, answer the question at the end and markdown format the reply.
+QA_TEMPLATE = """You are an enthusiastic and helpful combit support bot providing technical information about List & Label to software developers. 
+Given the sections from the documentation in the context, answer the question at the end and markdown format the reply. Include a helpful code snippet if it is available in the context.
 If you are unsure and the answer is not explicitly given in the context simply answer "Sorry, I don't know."
 
 Context: 
@@ -58,7 +58,7 @@ Context:
 Question: {question}
 Answer:"""
 
-QA_PROMPT = PromptTemplate(template=qa_template, input_variables=["question", "context"])
+QA_PROMPT = PromptTemplate(template=QA_TEMPLATE, input_variables=["question", "context"])
 
 
 @app.before_request
@@ -69,12 +69,14 @@ def check_session():
 
 @app.route('/')
 def index():
+    """Serves the static index.html."""
     session['active'] = 1
     return send_from_directory('static', 'index.html')
 
 # Helper API to return the meta title of a page, used for the sources list
 @app.route('/get_meta_title', methods=['GET'])
 def get_meta_title():
+    """Returns the meta title tag for the given URL."""
     url = request.args.get('url')
     if not url:
         return jsonify({'error': 'URL parameter is missing'})
@@ -93,6 +95,7 @@ def get_meta_title():
 # Clears the current session's memory (aka start new chat)
 @app.route('/reset')
 def reset():
+    """Resets all objects for the current session and starts a new chat."""
     memory_id = session.get('memory_id', None)
     if not memory_id is None:
         del session['memory_id']
