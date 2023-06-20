@@ -27,7 +27,7 @@ def sanitize_blog_post(content: BeautifulSoup) -> str:
     for element in nav_elements+widget_elements+top_elements+author+related :
         element.decompose()
 
-    return str(content.get_text())
+    return re.sub("\n+","\n", str(content.get_text()))
 
 def sanitize_documentx_page(content: BeautifulSoup) -> str:
     # remove some areas

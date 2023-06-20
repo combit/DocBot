@@ -111,3 +111,7 @@ def generate_sitemap(start_url):
 
 
 generate_sitemap('https://docu.combit.net/net/en/')
+# generate_sitemap('https://docu.combit.net/designer/en/')
+# generate_sitemap('https://docu.combit.net/reportserver/en/')
+# generate_sitemap('https://docu.combit.net/progref/en/')
+# generate_sitemap('https://docu.combit.net/adhocdesigner/en/')
