@@ -20,7 +20,7 @@ app = Flask(__name__, static_folder='static')
 # Initialize session management. Secret is used for cookie encryption. Change for production.
 app.secret_key = "T6Otg6T3BlbkFJFow"
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_FILE_DIR'] = 'C:\\temp\\OpenAIPlayground - V2\\flask_session'
+app.config['SESSION_FILE_DIR'] = '.\\flask_session'
 Session(app)
 
 # Store for session objects (mem cache, qa object)
@@ -35,7 +35,7 @@ os.makedirs(session_dir)
 embeddings = OpenAIEmbeddings()
 
 # Open Chroma vector database that is created via embedding.py
-instance = Chroma(persist_directory="C:\\temp\\OpenAIPlayground - V2\\combitEN",
+instance = Chroma(persist_directory=".\\combit_de",
                   embedding_function=embeddings)
 
 # Initialize ChatOpenAI model

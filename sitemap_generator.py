@@ -1,5 +1,6 @@
 """Allows to generate sitemaps for URLs that don't have one."""
 import time
+import os
 from urllib.parse import urlparse, urljoin
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -18,8 +19,32 @@ def scroll_to_bottom(driver):
             break
         last_height = new_height
 
+def add_page_to_sitemap(current_url, soup, sitemap):
+    """Checks to see if a page is "worth" being added to the sitemap"""
 
-def generate_sitemap(start_url):
+    # Checks to see if a page is "worth" being added to the sitemap
+    conditions = [
+        current_url in sitemap,
+        ("/net/" in current_url and "#" in current_url),
+        ("/net/" in current_url and "webindex" in current_url),
+        ("#c1tab" in current_url or "#c1popup" in current_url),
+        current_url.endswith("#"),
+        current_url.endswith("/")
+    ]
+
+    if any(conditions):
+        return False
+
+    if ("/net/" in current_url and "~" in current_url):
+        # Check if we have enough documentation to add the current URL
+        div_element = soup.find('div', class_='i-description-content')
+
+        # Check if the div element exists and the text length is more than 256 characters
+        if not div_element or len(div_element.text) < 128:
+            return False
+    return True
+
+def generate_sitemap(start_url, target_name):
     """Generate a sitemap for the given start_url by following all links within the domain."""
     # Initialize the visited set and the sitemap list
     visited = set()
@@ -74,32 +99,29 @@ def generate_sitemap(start_url):
                             and parsed_href.netloc == parsed_url.netloc
                             and encoded_href not in visited
                             and encoded_href not in url_stack
-                            and not "#" in encoded_href):
+                            and not (("#" in encoded_href) and ("/net/" in encoded_href))):
                         # Add the URL to the stack for further crawling
                         url_stack.append(encoded_href)
 
             # Now decide if this page is worth being added
-            if current_url in sitemap:
+            if not add_page_to_sitemap(current_url, soup, sitemap):
                 continue
-
-            if "#" in current_url:
-                continue
-
-            if ("/net/" in current_url and "~" in current_url):
-                # Check if we have enough documentation to add the current URL
-                div_element = soup.find('div', class_='i-description-content')
-
-                # Check if the div element exists and the text length is more than 256 characters
-                if not div_element or len(div_element.text) < 128:
-                    continue
 
             # If we get here, the page is fine to add
             sitemap.append(current_url)
             # Print the current URL being added
             print("Added:", current_url)
 
+        # Extract the directory from the target path
+        target_directory = os.path.dirname(target_name)
+
+        # Check if the directory exists
+        if not os.path.exists(target_directory):
+            # Create the directory if it doesn't exist
+            os.makedirs(target_directory)
+
         # Generate the sitemap.xml file
-        with open('sitemap.xml', 'w', encoding="utf-8") as f:
+        with open(target_name, 'w', encoding="utf-8") as f:
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
             f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
             for url in sitemap:
@@ -112,9 +134,16 @@ def generate_sitemap(start_url):
         # Quit the Selenium driver
         driver.quit()
 
+#DE
+generate_sitemap('https://docu.combit.net/designer/de/', '.\\input_de\\sitemap_designer.xml')
+generate_sitemap('https://docu.combit.net/adhocdesigner/de/', '.\\input_de\\sitemap_adhoc.xml')
+generate_sitemap('https://docu.combit.net/reportserver/de/', '.\\input_de\\sitemap_reportserver.xml')
+generate_sitemap('https://docu.combit.net/progref/de/', '.\\input_de\\sitemap_progref.xml')
+generate_sitemap('https://docu.combit.net/net/de/', '.\\input_de\\sitemap_net.xml')
 
-generate_sitemap('https://docu.combit.net/net/en/')
-# generate_sitemap('https://docu.combit.net/designer/en/')
-# generate_sitemap('https://docu.combit.net/reportserver/en/')
-# generate_sitemap('https://docu.combit.net/progref/en/')
-# generate_sitemap('https://docu.combit.net/adhocdesigner/en/')
+#EN
+generate_sitemap('https://docu.combit.net/net/en/', '.\\input_en\\sitemap_net.xml')
+generate_sitemap('https://docu.combit.net/designer/en/', '.\\input_en\\sitemap_designer.xml')
+generate_sitemap('https://docu.combit.net/reportserver/en/', '.\\input_en\\sitemap_reportserver.xml')
+generate_sitemap('https://docu.combit.net/progref/en/', '.\\input_en\\sitemap_progref.xml')
+generate_sitemap('https://docu.combit.net/adhocdesigner/en/', '.\\input_en\\sitemap_adhoc.xml')
