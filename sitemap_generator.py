@@ -22,16 +22,17 @@ def scroll_to_bottom(driver):
 def add_page_to_sitemap(current_url, soup, sitemap):
     """Checks to see if a page is "worth" being added to the sitemap"""
 
-    if (current_url in sitemap or
+    # Checks to see if a page is "worth" being added to the sitemap
+    conditions = [
+        current_url in sitemap,
+        ("/net/" in current_url and "#" in current_url),
+        ("/net/" in current_url and "webindex" in current_url),
+        ("#c1tab" in current_url or "#c1popup" in current_url),
+        current_url.endswith("#"),
+        current_url.endswith("/")
+    ]
 
-    # documentx special cases
-    ("/net/" in current_url and "#" in current_url) or
-    ("/net/" in current_url and "webindex" in current_url) or
-
-    # doctohelp special cases
-    ("#c1tab" in current_url or "#c1popup" in current_url) or
-    current_url.endswith("#") or
-    current_url.endswith("/")):
+    if any(conditions):
         return False
 
     if ("/net/" in current_url and "~" in current_url):
