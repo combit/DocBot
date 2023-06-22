@@ -60,8 +60,12 @@ def sanitize_content_page(content: BeautifulSoup) -> str:
 embeddings = OpenAIEmbeddings()
 
 # Create Chroma instance
-instance = Chroma(embedding_function=embeddings,
-                  persist_directory="C:\\temp\\OpenAIPlayground - V2\\combitEN")
+instanceEN = Chroma(embedding_function=embeddings,
+                  persist_directory=".\\combit_en")
+
+instanceDE = Chroma(embedding_function=embeddings,
+                  persist_directory=".\\combit_de")
+
 
 def add_sitemap_documents(web_path, filter_urls, parsing_function, chroma_instance):
     """Adds all pages given in the web_path. Allows to filter and parse/sanitize the pages."""
@@ -76,56 +80,112 @@ def add_sitemap_documents(web_path, filter_urls, parsing_function, chroma_instan
     add_documents(sitemap_loader, chroma_instance)
 
 # add EN .NET help from docu.combit.net
-add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_net_en.xml',
+add_sitemap_documents('.\\input_en\\sitemap_net.xml',
                       [],
                       sanitize_documentx_page,
-                      instance)
+                      instanceEN)
 
 # add EN sitemap
 add_sitemap_documents('https://www.combit.com/page-sitemap.xml',
                       [],
                       sanitize_content_page,
-                      instance)
+                      instanceEN)
 
 # add EN designer help from docu.combit.net
-add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_designer_en.xml',
+add_sitemap_documents('.\\input_en\\sitemap_designer.xml',
                       [],
                       None,
-                      instance)
+                      instanceEN)
 
 # add EN programmer's reference from docu.combit.net
-add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_progref_en.xml',
+add_sitemap_documents('.\\input_en\\sitemap_progref.xml',
                       [],
                       None,
-                      instance)
+                      instanceEN)
 
 # add EN Report Server reference from docu.combit.net
-add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_reportserver_en.xml',
+add_sitemap_documents('.\\input_en\\sitemap_reportserver.xml',
                       [],
                       None,
-                      instance)
+                      instanceEN)
 
 # add EN AdHoc Designer reference from docu.combit.net
-add_sitemap_documents('C:\\temp\\OpenAIPlayground - V2\\input\\sitemap_adhoc_en.xml',
+add_sitemap_documents('.\\input_en\\sitemap_adhoc.xml',
                       [],
                       None,
-                      instance)
+                      instanceEN)
 
 # add EN Blog
 add_sitemap_documents('https://www.combit.blog/post-sitemap.xml',
-                      ["https://www.combit.blog/en/"],
+                      ['https://www.combit.blog/en/'],
                       sanitize_blog_post,
-                      instance)
+                      instanceEN)
 
 # add KB dump
-csv_loader = CSVLoader("C:\\temp\\OpenAIPlayground - V2\\input\\en-kb.sanitized.csv",
+csv_loader = CSVLoader('.\\input_en\\kb_sanitized.csv',
                    source_column='link',
+                   encoding='utf-8',                   
                    csv_args={
                     'delimiter': ',',
                     'quotechar': '"',
                     'fieldnames': ['link','title','raw'],
                     })
-add_documents(csv_loader, instance)
+add_documents(csv_loader, instanceEN)
 
-instance.persist()
-instance = None
+# add DE .NET help from docu.combit.net
+add_sitemap_documents('.\\input_de\\sitemap_net.xml',
+                      [],
+                      sanitize_documentx_page,
+                      instanceDE)
+
+# add DE sitemap
+add_sitemap_documents('https://www.combit.de/page-sitemap.xml',
+                      ['https://www.combit.net/reporting-tool/'],
+                      sanitize_content_page,
+                      instanceDE)
+
+# add DE designer help from docu.combit.net
+add_sitemap_documents('.\\input_de\\sitemap_designer.xml',
+                      [],
+                      None,
+                      instanceDE)
+
+# add DE programmer's reference from docu.combit.net
+add_sitemap_documents('.\\input_de\\sitemap_progref.xml',
+                      [],
+                      None,
+                      instanceDE)
+
+# add DE Report Server reference from docu.combit.net
+add_sitemap_documents('.\\input_de\\sitemap_reportserver.xml',
+                      [],
+                      None,
+                      instanceDE)
+
+# add DE AdHoc Designer reference from docu.combit.net
+add_sitemap_documents('.\\input_de\\sitemap_adhoc.xml',
+                      [],
+                      None,
+                      instanceDE)
+
+# add DE Blog
+add_sitemap_documents('https://www.combit.blog/post-sitemap.xml',
+                      ['https://www.combit.blog/de/'],
+                      sanitize_blog_post,
+                      instanceDE)
+
+# add KB dump
+csv_loader = CSVLoader('.\\input_de\\kb_sanitized.csv',
+                   source_column='link',
+                   encoding='utf-8',
+                   csv_args={
+                    'delimiter': ',',
+                    'quotechar': '"',
+                    'fieldnames': ['link','title','raw']
+                    })
+add_documents(csv_loader, instanceDE)
+
+instanceEN.persist()
+instanceEN = None
+instanceDE.persist()
+instanceEN = None
