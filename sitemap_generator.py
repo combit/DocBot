@@ -19,6 +19,37 @@ def scroll_to_bottom(driver):
             break
         last_height = new_height
 
+def add_page_to_sitemap(current_url, soup, sitemap):
+    """Checks to see if a page is "worth" being added to the sitemap"""
+    if current_url in sitemap:
+        return False
+
+    # documentx special cases
+    if ("/net/" in current_url and "#" in current_url):
+        return False
+
+    if ("/net/" in current_url and "webindex" in current_url):
+        return False
+
+    if ("/net/" in current_url and "~" in current_url):
+        # Check if we have enough documentation to add the current URL
+        div_element = soup.find('div', class_='i-description-content')
+
+        # Check if the div element exists and the text length is more than 256 characters
+        if not div_element or len(div_element.text) < 128:
+            return False
+
+    # doctohelp special cases
+    if ("#c1tab" in current_url or "#c1popup" in current_url):
+        return False
+
+    if current_url.endswith("#"):
+        return False
+
+    if current_url.endswith("/"):
+        return False
+    
+    return True
 
 def generate_sitemap(start_url, target_name):
     """Generate a sitemap for the given start_url by following all links within the domain."""
@@ -80,32 +111,7 @@ def generate_sitemap(start_url, target_name):
                         url_stack.append(encoded_href)
 
             # Now decide if this page is worth being added
-            if current_url in sitemap:
-                continue
-
-            # documentx special cases
-            if ("/net/" in current_url and "#" in current_url):
-                continue
-
-            if ("/net/" in current_url and "webindex" in current_url):
-                continue
-
-            if ("/net/" in current_url and "~" in current_url):
-                # Check if we have enough documentation to add the current URL
-                div_element = soup.find('div', class_='i-description-content')
-
-                # Check if the div element exists and the text length is more than 256 characters
-                if not div_element or len(div_element.text) < 128:
-                    continue
-
-            # doctohelp special cases
-            if ("#c1tab" in current_url or "#c1popup" in current_url):
-                continue
-
-            if (current_url.endswith("#")):
-                continue
-
-            if (current_url.endswith("/")):
+            if not add_page_to_sitemap(current_url, soup, sitemap)
                 continue
 
             # If we get here, the page is fine to add

@@ -124,11 +124,11 @@ add_sitemap_documents('https://www.combit.blog/post-sitemap.xml',
 # add KB dump
 csv_loader = CSVLoader('.\\input_en\\kb_sanitized.csv',
                    source_column='link',
-                   encoding='utf-8',                   
+                   encoding='utf-8',
                    csv_args={
                     'delimiter': ',',
                     'quotechar': '"',
-                    'fieldnames': ['link','title','raw'],
+                    'fieldnames': ['title','raw','link']
                     })
 add_documents(csv_loader, instanceEN)
 
@@ -181,7 +181,7 @@ csv_loader = CSVLoader('.\\input_de\\kb_sanitized.csv',
                    csv_args={
                     'delimiter': ',',
                     'quotechar': '"',
-                    'fieldnames': ['link','title','raw']
+                    'fieldnames': ['title','raw','link']
                     })
 add_documents(csv_loader, instanceDE)
 

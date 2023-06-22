@@ -35,7 +35,7 @@ os.makedirs(session_dir)
 embeddings = OpenAIEmbeddings()
 
 # Open Chroma vector database that is created via embedding.py
-instance = Chroma(persist_directory=".\\combit_en",
+instance = Chroma(persist_directory=".\\combit_de",
                   embedding_function=embeddings)
 
 # Initialize ChatOpenAI model
