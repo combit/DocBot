@@ -21,14 +21,17 @@ def scroll_to_bottom(driver):
 
 def add_page_to_sitemap(current_url, soup, sitemap):
     """Checks to see if a page is "worth" being added to the sitemap"""
-    if current_url in sitemap:
-        return False
+
+    if (current_url in sitemap or
 
     # documentx special cases
-    if ("/net/" in current_url and "#" in current_url):
-        return False
+    ("/net/" in current_url and "#" in current_url) or
+    ("/net/" in current_url and "webindex" in current_url) or
 
-    if ("/net/" in current_url and "webindex" in current_url):
+    # doctohelp special cases
+    ("#c1tab" in current_url or "#c1popup" in current_url) or
+    current_url.endswith("#") or
+    current_url.endswith("/")):
         return False
 
     if ("/net/" in current_url and "~" in current_url):
@@ -38,17 +41,6 @@ def add_page_to_sitemap(current_url, soup, sitemap):
         # Check if the div element exists and the text length is more than 256 characters
         if not div_element or len(div_element.text) < 128:
             return False
-
-    # doctohelp special cases
-    if ("#c1tab" in current_url or "#c1popup" in current_url):
-        return False
-
-    if current_url.endswith("#"):
-        return False
-
-    if current_url.endswith("/"):
-        return False
-    
     return True
 
 def generate_sitemap(start_url, target_name):
