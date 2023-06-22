@@ -53,8 +53,8 @@ CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(CONDENSE_TEMPLATE)
 
 # QA prompt
 QA_TEMPLATE = """You are an enthusiastic and helpful combit support bot providing technical information about List & Label to software developers.
-Given the sections from the documentation in the context, answer the question at the end and markdown format the reply. Include a helpful code snippet if it is available in the context.
-If you are unsure and the answer is not explicitly given in the context simply answer "Sorry, I don't know."
+Given the sections from the documentation in the context, answer the question at the end and markdown format the reply.
+Never make up answers - if you are unsure and the answer is not explicitly given in the context simply answer "Sorry, I don't know."
 
 Context: 
 {context}
@@ -76,25 +76,6 @@ def index():
     session['active'] = 1
     return send_from_directory('static', 'index.html')
 
-# Helper API to return the meta title of a page, used for the sources list
-@app.route('/get_meta_title', methods=['GET'])
-def get_meta_title():
-    """Returns the meta title tag for the given URL."""
-    url = request.args.get('url')
-    if not url:
-        return jsonify({'error': 'URL parameter is missing'})
-
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'}
-        response = requests.get(url, headers=headers, timeout=40)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        title = soup.find('title').get_text() if soup.title else ''
-        return jsonify({'meta_title': title})
-    except requests.exceptions.RequestException as e:
-        return jsonify({'error': str(e)})
-
-
 # Clears the current session's memory (aka start new chat)
 @app.route('/reset')
 def reset():
@@ -113,8 +94,44 @@ def reset():
     response.status_code = 200
     return response
 
+# Helper API to return the manual type of a page, used for the sources list
+def get_manual_type(url):
+    """Returns the manual type for the given URL."""
+    if "/progref/" in url:
+        return "Programmer's Manual"
+    elif "/designer/" in url:
+        return "Designer Manual"
+    elif "/reportserver/" in url:
+        return "Report Server Manual"
+    elif "/adhocdesigner" in url:
+        return "AdHoc Designer Manual"
+    elif "/net/" in url:
+        return ".NET Help"
+    elif "combit.blog" in url:
+        return "Reporting Blog"
+    elif "forum.combit.net" in url:
+        return "Knowledgebase"
+    elif "combit.com" in url:
+        return "combit Website"
+    else:
+        return "Manual"
+
+# Helper API to return the meta title of a page, used for the sources list
+def get_meta_title(url):
+    """Returns the meta title tag for the given URL."""
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'}
+        response = requests.get(url, headers=headers, timeout=40)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        title = soup.find('title').get_text() if soup.title else ''
+        return title
+    except requests.exceptions.RequestException as e:
+        return 'error:' + str(e)
+
+
 @app.route('/qa')
-def my_api():
+def qa_query():
     """Main endpoint for Q&A chat"""
     # Try to retrieve values from session store. As all session objects need to be JSON serializable,
     # keep track of non serializable objects in a local store and serialize UUIDs instead.
@@ -150,13 +167,17 @@ def my_api():
     query = request.args.get('query')
     # Process the input string through the Q&A chain
     query_response = qa({"question": query})
-    metadata_list = [obj.metadata for obj in query_response["source_documents"]]
+
+    # Format the sources as markdown links
+    metadata_list = [
+        "[{} - {}]({})".format(get_manual_type(obj.metadata["source"]), get_meta_title(obj.metadata["source"]), obj.metadata["source"])
+        for obj in query_response["source_documents"]
+    ]
 
     response = {
-        'answer' : query_response["answer"],
-        'sources' : metadata_list
+        'answer': query_response["answer"],
+        'sources': metadata_list
     }
-
     response = make_response(jsonify(response), 200)
     response.mimetype = "application/json"
     return response

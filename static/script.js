@@ -17,8 +17,7 @@ document.getElementById('chat-form').addEventListener('submit', function (event)
   
         // Check if sources are available and display them
         if (Array.isArray(sources)) {
-          const sourceList = sources.map(source => source.source);
-          displaySources(sourceList);
+          displaySources(sources);
         }
       })
       .catch(error => {
@@ -56,34 +55,7 @@ document.getElementById('chat-form').addEventListener('submit', function (event)
   
     uniqueSources.forEach(source => {
       const sourceItem = document.createElement('li');
-  
-      const isLink = isValidURL(source);
-  
-      if (isLink) {
-        const sourceLink = document.createElement('a');
-        sourceLink.href = source;
-        sourceLink.target = "_blank"; // Open link in a new tab
-  
-        const manualType = getManualType(source);
-        const url = '/get_meta_title?url=' + encodeURIComponent(source);
-  
-        fetch(url)
-          .then(response => response.json())
-          .then(data => {
-            const metaTitle = data.meta_title;
-            sourceLink.textContent = `${manualType} - ${metaTitle}`;
-            // Scroll to the bottom of the chat log
-            chatLog.scrollTop = chatLog.scrollHeight;
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
-  
-        sourceItem.appendChild(sourceLink);
-      } else {
-        sourceItem.textContent = source;
-      }
-  
+      sourceItem.innerHTML = marked.parse(source)
       sourcesList.appendChild(sourceItem);
     });
   
@@ -105,28 +77,7 @@ document.getElementById('chat-form').addEventListener('submit', function (event)
     }
   }
   
-  function getManualType(url) {
-    if (url.includes("/progref/")) {
-      return "Programmer's Manual";
-    } else if (url.includes("/designer/")) {
-      return "Designer Manual";
-    } else if (url.includes("/reportserver/")) {
-      return "Report Server Manual";
-    } else if (url.includes("/adhocdesigner")) {
-      return "AdHoc Designer Manual";
-    } else if (url.includes("/net/")) {
-      return ".NET Help";
-    } else if (url.includes("combit.blog")) {
-      return "Reporting Blog";
-    } else if (url.includes("forum.combit.net")) {
-      return "Knowledgebase";
-    } else if (url.includes("combit.com")) {
-      return "combit Website";
-    } else {
-      return "Manual";
-    }
-  }
-  
+    
     // Add event listener to the reset button
   document.getElementById('reset-button').addEventListener('click', function () {
     resetChat();
