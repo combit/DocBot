@@ -97,25 +97,21 @@ def reset():
 # Helper API to return the manual type of a page, used for the sources list
 def get_manual_type(url):
     """Returns the manual type for the given URL."""
-    if "/progref/" in url:
-        return "Programmer's Manual"
-    elif "/designer/" in url:
-        return "Designer Manual"
-    elif "/reportserver/" in url:
-        return "Report Server Manual"
-    elif "/adhocdesigner" in url:
-        return "AdHoc Designer Manual"
-    elif "/net/" in url:
-        return ".NET Help"
-    elif "combit.blog" in url:
-        return "Reporting Blog"
-    elif "forum.combit.net" in url:
-        return "Knowledgebase"
-    elif "combit.com" in url:
-        return "combit Website"
-    else:
-        return "Manual"
+    manual_types = {
+            "/progref/": "Programmer's Manual",
+            "/designer/": "Designer Manual",
+            "/reportserver/": "Report Server Manual",
+            "/adhocdesigner/": "AdHoc Designer Manual",
+            "/net/": ".NET Help",
+            "combit.blog": "Reporting Blog",
+            "forum.combit.net": "Knowledgebase",
+            "combit.com": "combit Website"
+        }
+    for pattern, manual_type in manual_types.items():
+        if pattern in url:
+            return manual_type
 
+    return "Manual"
 # Helper API to return the meta title of a page, used for the sources list
 def get_meta_title(url):
     """Returns the meta title tag for the given URL."""
@@ -170,8 +166,8 @@ def qa_query():
 
     # Format the sources as markdown links
     metadata_list = [
-        "[{} - {}]({})".format(get_manual_type(obj.metadata["source"]), get_meta_title(obj.metadata["source"]), obj.metadata["source"])
-        for obj in query_response["source_documents"]
+    f"[{get_manual_type(obj.metadata['source'])} - {get_meta_title(obj.metadata['source'])}]({obj.metadata['source']})"
+    for obj in query_response['source_documents']
     ]
 
     response = {
