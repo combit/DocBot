@@ -111,7 +111,7 @@ def generate_sitemap(start_url, target_name):
                         url_stack.append(encoded_href)
 
             # Now decide if this page is worth being added
-            if not add_page_to_sitemap(current_url, soup, sitemap)
+            if not add_page_to_sitemap(current_url, soup, sitemap):
                 continue
 
             # If we get here, the page is fine to add
