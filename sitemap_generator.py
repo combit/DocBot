@@ -25,6 +25,7 @@ def add_page_to_sitemap(current_url, soup, sitemap):
     # Checks to see if a page is "worth" being added to the sitemap
     conditions = [
         current_url in sitemap,
+        current_url.replace("index.html#!","") in sitemap,
         ("/net/" in current_url and "#" in current_url),
         ("/net/" in current_url and "webindex" in current_url),
         ("#c1tab" in current_url or "#c1popup" in current_url),
@@ -63,7 +64,7 @@ def generate_sitemap(start_url, target_name):
         url_stack = [start_url]
 
         while url_stack:
-            url = url_stack.pop()
+            url = url_stack.pop()           
 
             if url in visited:
                 continue
@@ -108,6 +109,7 @@ def generate_sitemap(start_url, target_name):
                 continue
 
             # If we get here, the page is fine to add
+            current_url = current_url.replace("index.html#!","")            
             sitemap.append(current_url)
             # Print the current URL being added
             print("Added:", current_url)

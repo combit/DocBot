@@ -14,7 +14,7 @@ def add_documents(document_loader, chroma_instance):
     """Adds documents from a langchain loader to the database"""
     documents = document_loader.load()
     # The customized splitters serve to be able to break at sentence level if required.
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=200, separators= ["\n\n", "\n", ".", ";", ",", " ", ""])
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=225, separators= ["\n\n", "\n", ".", ";", ",", " ", ""])
     texts = text_splitter.split_documents(documents)
     chroma_instance.add_documents(texts)
 
