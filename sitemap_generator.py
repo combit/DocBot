@@ -57,6 +57,7 @@ def generate_sitemap(start_url, target_name):
     # Configure Selenium to use Chrome in headless mode
     options = Options()
     options.headless = True
+    options.add_argument("--headless=new")
     driver = webdriver.Chrome(options=options)
 
     try:
@@ -137,15 +138,15 @@ def generate_sitemap(start_url, target_name):
         driver.quit()
 
 #DE
-generate_sitemap('https://docu.combit.net/designer/de/', '.\\input_de\\sitemap_designer.xml')
-generate_sitemap('https://docu.combit.net/adhocdesigner/de/', '.\\input_de\\sitemap_adhoc.xml')
-generate_sitemap('https://docu.combit.net/reportserver/de/', '.\\input_de\\sitemap_reportserver.xml')
-generate_sitemap('https://docu.combit.net/progref/de/', '.\\input_de\\sitemap_progref.xml')
+#generate_sitemap('https://docu.combit.net/designer/de/', '.\\input_de\\sitemap_designer.xml')
+#generate_sitemap('https://docu.combit.net/adhocdesigner/de/', '.\\input_de\\sitemap_adhoc.xml')
+#generate_sitemap('https://docu.combit.net/reportserver/de/', '.\\input_de\\sitemap_reportserver.xml')
+#generate_sitemap('https://docu.combit.net/progref/de/', '.\\input_de\\sitemap_progref.xml')
 generate_sitemap('https://docu.combit.net/net/de/', '.\\input_de\\sitemap_net.xml')
 
 #EN
-generate_sitemap('https://docu.combit.net/net/en/', '.\\input_en\\sitemap_net.xml')
-generate_sitemap('https://docu.combit.net/designer/en/', '.\\input_en\\sitemap_designer.xml')
-generate_sitemap('https://docu.combit.net/reportserver/en/', '.\\input_en\\sitemap_reportserver.xml')
-generate_sitemap('https://docu.combit.net/progref/en/', '.\\input_en\\sitemap_progref.xml')
-generate_sitemap('https://docu.combit.net/adhocdesigner/en/', '.\\input_en\\sitemap_adhoc.xml')
+#generate_sitemap('https://docu.combit.net/net/en/', '.\\input_en\\sitemap_net.xml')
+#generate_sitemap('https://docu.combit.net/designer/en/', '.\\input_en\\sitemap_designer.xml')
+#generate_sitemap('https://docu.combit.net/reportserver/en/', '.\\input_en\\sitemap_reportserver.xml')
+#generate_sitemap('https://docu.combit.net/progref/en/', '.\\input_en\\sitemap_progref.xml')
+#generate_sitemap('https://docu.combit.net/adhocdesigner/en/', '.\\input_en\\sitemap_adhoc.xml')
