@@ -6,14 +6,24 @@ import requests
 from flask import Flask, request,make_response,session, send_from_directory, jsonify
 from flask_session import Session
 from bs4 import BeautifulSoup
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
-from langchain.chat_models import ChatOpenAI
+from langchain_community.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings
+from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationalRetrievalChain
+from langchain.callbacks.base import BaseCallbackHandler
 
 # pylint: disable=line-too-long,invalid-name
+
+
+#helper class for streaming
+class CustomCallbackHandler(BaseCallbackHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def on_llm_new_token(self, token, **kwargs) -> None:
+        print(token, end='', flush=True)
 
 app = Flask(__name__, static_folder='static')
 
@@ -39,7 +49,8 @@ instance = Chroma(persist_directory=".\\combit_en",
                   embedding_function=embeddings)
 
 # Initialize ChatOpenAI model
-llm = ChatOpenAI(temperature=0.5, model_name="gpt-4", )
+callbacks = [CustomCallbackHandler()]
+llm = ChatOpenAI(temperature=0.5, model="gpt-4o", callbacks=callbacks, streaming=True)
 
 # Prompt Templates & Messages
 
@@ -137,6 +148,7 @@ def qa_query():
         memory = ConversationBufferWindowMemory(k=5,
                                                 memory_key="chat_history",
                                                 return_messages=True,
+                                                input_key='question',
                                                 output_key='answer')
         memory_id = str(uuid.uuid4())
         session['memory_id'] = memory_id

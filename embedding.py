@@ -1,8 +1,8 @@
 """Helper functions for document embedding."""
 import os
 import re
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.sitemap import SitemapLoader
 from langchain.document_loaders import CSVLoader
