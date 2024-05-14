@@ -4,6 +4,7 @@ Flask
 flask-session
 beautifulsoup4
 langchain
+langchain_openai
 selenium
 urllib3
 beautifulsoup4
